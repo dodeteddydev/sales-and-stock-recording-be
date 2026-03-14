@@ -98,13 +98,13 @@ const updateCustomerService = async (
 
   await checkUser(userId, res);
 
-  const customer = await checkCustomerById(customerId);
+  const customerExist = await checkCustomerById(customerId);
 
-  if (!customer) {
+  if (!customerExist) {
     return errorResponse(res, "Customer not found", null, 404);
   }
 
-  if (customer.phone !== updateCustomerRequest.phone) {
+  if (customerExist.phone !== updateCustomerRequest.phone) {
     const customerExistByPhone = await checkCustomerByPhone(
       updateCustomerRequest.phone,
     );
@@ -119,7 +119,7 @@ const updateCustomerService = async (
     }
   }
 
-  await prisma.customer.update({
+  const customer = await prisma.customer.update({
     where: {
       id: customerId,
     },
@@ -134,8 +134,8 @@ const updateCustomerService = async (
     "Customer updated successfully",
     {
       id: customer.id,
-      name: updateCustomerRequest.name,
-      phone: updateCustomerRequest.phone,
+      name: customer.name,
+      phone: customer.phone,
       createdAt: customer.createdAt,
       createdBy: {
         id: customer.user.id,
