@@ -12,18 +12,7 @@ import {
 } from "../schemas/productSchema";
 import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
-
-const checkUser = async (userId: number, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
-
-  if (!user) {
-    return errorResponse(res, "Unauthorized", "Invalid token", 401);
-  }
-};
+import { checkUser } from "./authService";
 
 const checkProductByName = async (productName: string) => {
   const product = await prisma.product.findFirst({
