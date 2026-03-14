@@ -10,18 +10,8 @@ import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
 import { checkUser } from "./authService";
 
-const checkCustomerByName = async (name: string) => {
-  const customer = await prisma.customer.findFirst({
-    where: {
-      name: name,
-    },
-  });
-
-  return customer;
-};
-
 const checkCustomerByPhone = async (phone: string) => {
-  const customer = await prisma.customer.findFirst({
+  const customer = await prisma.customer.findUnique({
     where: {
       phone: phone,
     },
@@ -56,19 +46,6 @@ const createCustomerService = async (
   const createCustomerRequest = validation(createCustomerSchema, req);
 
   await checkUser(userId, res);
-
-  const customerExistByName = await checkCustomerByName(
-    createCustomerRequest.name,
-  );
-
-  if (customerExistByName) {
-    return errorResponse(
-      res,
-      "Name already used in another customer",
-      null,
-      409,
-    );
-  }
 
   const customerExistByPhone = await checkCustomerByPhone(
     createCustomerRequest.phone,
@@ -121,22 +98,13 @@ const updateCustomerService = async (
 
   await checkUser(userId, res);
 
-  if (req.name !== updateCustomerRequest.name) {
-    const customerExistByName = await checkCustomerByName(
-      updateCustomerRequest.name,
-    );
+  const customer = await checkCustomerById(customerId);
 
-    if (customerExistByName) {
-      return errorResponse(
-        res,
-        "Name already used in another customer",
-        null,
-        409,
-      );
-    }
+  if (!customer) {
+    return errorResponse(res, "Customer not found", null, 404);
   }
 
-  if (req.phone !== updateCustomerRequest.phone) {
+  if (customer.phone !== updateCustomerRequest.phone) {
     const customerExistByPhone = await checkCustomerByPhone(
       updateCustomerRequest.phone,
     );
@@ -149,12 +117,6 @@ const updateCustomerService = async (
         409,
       );
     }
-  }
-
-  const customer = await checkCustomerById(customerId);
-
-  if (!customer) {
-    return errorResponse(res, "Customer not found", null, 404);
   }
 
   await prisma.customer.update({
@@ -172,8 +134,8 @@ const updateCustomerService = async (
     "Customer updated successfully",
     {
       id: customer.id,
-      name: customer.name,
-      phone: customer.phone,
+      name: updateCustomerRequest.name,
+      phone: updateCustomerRequest.phone,
       createdAt: customer.createdAt,
       createdBy: {
         id: customer.user.id,
