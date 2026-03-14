@@ -19,6 +19,18 @@ import { generateRefreshToken, generateToken } from "../utils/generateToken";
 import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
 
+const checkUser = async (userId: number, res: Response) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) {
+    return errorResponse(res, "Unauthorized", "Invalid token", 401);
+  }
+};
+
 const registerService = async (req: RegisterRequest, res: Response) => {
   const registerRequest = validation(registerSchema, req);
 
@@ -130,4 +142,4 @@ const refreshTokenService = async (req: RefreshTokenRequest, res: Response) => {
   );
 };
 
-export { loginService, refreshTokenService, registerService };
+export { checkUser, loginService, refreshTokenService, registerService };
