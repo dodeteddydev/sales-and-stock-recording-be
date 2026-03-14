@@ -171,4 +171,10 @@ const deleteProductService = async (
   return successResponse(res, "Product deleted successfully", null, 200);
 };
 
-export { createProductService, deleteProductService, updateProductService };
+export {
+  checkUser,
+  checkProductById,
+  createProductService,
+  deleteProductService,
+  updateProductService,
+};

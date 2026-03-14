@@ -5,6 +5,7 @@ import { authMiddleware } from "./middlewares/authMiddleware";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 import authRoute from "./routes/authRoute";
 import productRoute from "./routes/productRoute";
+import restockRoute from "./routes/restockRoute";
 import customerRoute from "./routes/customerRoute";
 import { notFoundMiddleware } from "./middlewares/notFoundMiddleware";
 
@@ -18,6 +19,7 @@ app.use("/auth", authRoute);
 // Private Routes
 app.use(authMiddleware);
 app.use(productRoute);
+app.use(restockRoute);
 app.use(customerRoute);
 app.use(errorMiddleware);
 app.use(notFoundMiddleware);
