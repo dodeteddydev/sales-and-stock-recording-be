@@ -6,6 +6,7 @@ import { errorMiddleware } from "./middlewares/errorMiddleware";
 import authRoute from "./routes/authRoute";
 import productRoute from "./routes/productRoute";
 import restockRoute from "./routes/restockRoute";
+import customerRoute from "./routes/customerRoute";
 import { notFoundMiddleware } from "./middlewares/notFoundMiddleware";
 
 const app = express();
@@ -19,6 +20,7 @@ app.use("/auth", authRoute);
 app.use(authMiddleware);
 app.use(productRoute);
 app.use(restockRoute);
+app.use(customerRoute);
 app.use(errorMiddleware);
 app.use(notFoundMiddleware);
 

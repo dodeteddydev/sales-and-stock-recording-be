@@ -71,7 +71,7 @@ model Restock {
 model Customer {
   id        Int @id @default(autoincrement())
   name      String
-  phone     String
+  phone     String @unique
   createdAt DateTime @default(now())
 
   sales     Sale[]

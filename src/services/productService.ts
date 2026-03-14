@@ -12,18 +12,7 @@ import {
 } from "../schemas/productSchema";
 import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
-
-const checkUser = async (userId: number, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
-
-  if (!user) {
-    return errorResponse(res, "Unauthorized", "Invalid token", 401);
-  }
-};
+import { checkUser } from "./authService";
 
 const checkProductByName = async (productName: string) => {
   const product = await prisma.product.findFirst({
@@ -109,7 +98,13 @@ const updateProductService = async (
 
   await checkUser(userId, res);
 
-  if (req.name !== updateProductRequest.name) {
+  const productExist = await checkProductById(productId);
+
+  if (!productExist) {
+    return errorResponse(res, "Product not found", null, 404);
+  }
+
+  if (productExist.name !== updateProductRequest.name) {
     const productExist = await checkProductByName(updateProductRequest.name);
 
     if (productExist) {
@@ -117,17 +112,14 @@ const updateProductService = async (
     }
   }
 
-  const product = await checkProductById(productId);
-
-  if (!product) {
-    return errorResponse(res, "Product not found", null, 404);
-  }
-
-  await prisma.product.update({
+  const product = await prisma.product.update({
     where: {
       id: productId,
     },
     data: updateProductRequest,
+    include: {
+      user: true,
+    },
   });
 
   return successResponse<UpdateProductResponse>(
