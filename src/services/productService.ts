@@ -81,7 +81,7 @@ const createProductService = async (
       createdAt: product.createdAt,
       createdBy: {
         id: product.user.id,
-        name: product.user.username,
+        name: product.user.name,
       },
     },
     201,
@@ -133,7 +133,7 @@ const updateProductService = async (
       createdAt: product.createdAt,
       createdBy: {
         id: product.user.id,
-        name: product.user.username,
+        name: product.user.name,
       },
     },
     200,
