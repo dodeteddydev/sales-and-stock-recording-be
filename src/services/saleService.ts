@@ -79,7 +79,7 @@ const createSaleService = async (
       createdAt: sale.createdAt,
       createdBy: {
         id: sale.user.id,
-        name: sale.user.username,
+        name: sale.user.name,
       },
     },
     201,
@@ -155,7 +155,7 @@ const updateSaleService = async (
     createdAt: sale.createdAt,
     createdBy: {
       id: sale.user.id,
-      name: sale.user.username,
+      name: sale.user.name,
     },
   });
 };
