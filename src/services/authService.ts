@@ -49,6 +49,7 @@ const registerService = async (req: RegisterRequest, res: Response) => {
 
   const user = await prisma.user.create({
     data: {
+      name: registerRequest.name,
       username: registerRequest.username,
       password: hashedPassword,
       role: registerRequest.role,
@@ -60,6 +61,7 @@ const registerService = async (req: RegisterRequest, res: Response) => {
     "User registered successfully",
     {
       id: user.id,
+      name: user.name,
       username: user.username,
       role: user.role,
     },
@@ -97,6 +99,7 @@ const loginService = async (req: LoginRequest, res: Response) => {
     "User logged in successfully",
     {
       id: user.id,
+      name: user.name,
       username: user.username,
       role: user.role,
       token,

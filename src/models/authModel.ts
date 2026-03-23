@@ -6,6 +6,7 @@ export interface AuthRequest extends Request {
 }
 
 export type RegisterRequest = {
+  name: string;
   username: string;
   password: string;
   role: Role;
@@ -13,6 +14,7 @@ export type RegisterRequest = {
 
 export type RegisterResponse = {
   id: number;
+  name: string;
   username: string;
   role: Role;
 };
@@ -22,10 +24,7 @@ export type LoginRequest = {
   password: string;
 };
 
-export type LoginResponse = {
-  id: number;
-  username: string;
-  role: Role;
+export type LoginResponse = RegisterResponse & {
   token: string;
   refreshToken: string;
 };

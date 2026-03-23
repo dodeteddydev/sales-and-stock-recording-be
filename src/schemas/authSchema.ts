@@ -1,6 +1,9 @@
 import z from "zod";
 
 const registerSchema = z.object({
+  name: z
+    .string("Name is required")
+    .min(3, "Name must be at least 3 characters"),
   username: z
     .string("Username is required")
     .min(6, "Username must be at least 6 characters"),
