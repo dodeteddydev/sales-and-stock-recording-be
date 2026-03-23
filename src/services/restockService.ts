@@ -77,7 +77,7 @@ const createRestockService = async (
       createdAt: restock.createdAt,
       createdBy: {
         id: restock.user.id,
-        name: restock.user.username,
+        name: restock.user.name,
       },
     },
     200,
@@ -145,7 +145,7 @@ const updateRestockService = async (
       createdAt: restock.createdAt,
       createdBy: {
         id: restock.user.id,
-        name: restock.user.username,
+        name: restock.user.name,
       },
     },
     200,
