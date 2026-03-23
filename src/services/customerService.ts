@@ -81,7 +81,7 @@ const createCustomerService = async (
       createdAt: customer.createdAt,
       createdBy: {
         id: customer.user.id,
-        name: customer.user.username,
+        name: customer.user.name,
       },
     },
     201,
@@ -139,7 +139,7 @@ const updateCustomerService = async (
       createdAt: customer.createdAt,
       createdBy: {
         id: customer.user.id,
-        name: customer.user.username,
+        name: customer.user.name,
       },
     },
     200,
