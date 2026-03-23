@@ -1,12 +1,12 @@
 import { IdAndNameType } from "../types/idAndNameType";
 
-export type CreateProductRequest = {
+export type ProductRequest = {
   name: string;
   price: number;
   stock: number;
 };
 
-export type CreateProductResponse = {
+export type ProductResponse = {
   id: number;
   name: string;
   price: number;
@@ -14,7 +14,3 @@ export type CreateProductResponse = {
   createdAt: Date;
   createdBy: IdAndNameType;
 };
-
-export type UpdateProductRequest = CreateProductRequest;
-
-export type UpdateProductResponse = CreateProductResponse;

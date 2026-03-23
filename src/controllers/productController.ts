@@ -1,11 +1,13 @@
-import { NextFunction, Request, Response } from "express";
-import { CreateProductRequest } from "../models/productModel";
+import { NextFunction, Response } from "express";
 import { AuthRequest } from "../models/authModel";
+import { ProductRequest } from "../models/productModel";
 import {
   createProductService,
   deleteProductService,
+  getProductService,
   updateProductService,
 } from "../services/productService";
+import { ParametersType } from "../types/parametersType";
 
 const createProductController = async (
   req: AuthRequest,
@@ -13,8 +15,28 @@ const createProductController = async (
   next: NextFunction,
 ) => {
   try {
-    const request = req.body as CreateProductRequest;
+    const request = req.body as ProductRequest;
     const response = await createProductService(req.userId ?? 0, request, res);
+
+    return response;
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getProductController = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const request = {
+      search: req.query.search,
+      page: Number(req.query.page),
+      limit: Number(req.query.limit),
+    } as ParametersType;
+
+    const response = await getProductService(req.userId ?? 0, request, res);
 
     return response;
   } catch (error) {
@@ -28,7 +50,7 @@ const updateProductController = async (
   next: NextFunction,
 ) => {
   try {
-    const request = req.body as CreateProductRequest;
+    const request = req.body as ProductRequest;
     const productId = Number(req.params.id);
     const response = await updateProductService(
       req.userId ?? 0,
@@ -64,6 +86,7 @@ const deleteProductController = async (
 
 export {
   createProductController,
-  updateProductController,
+  getProductController,
   deleteProductController,
+  updateProductController,
 };
