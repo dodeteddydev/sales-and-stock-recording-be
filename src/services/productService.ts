@@ -1,15 +1,12 @@
 import { Response } from "express";
 import { prisma } from "../config/db";
-import {
-  CreateProductRequest,
-  CreateProductResponse,
-  UpdateProductRequest,
-  UpdateProductResponse,
-} from "../models/productModel";
+import { ProductRequest, ProductResponse } from "../models/productModel";
 import {
   createProductSchema,
   updateProductSchema,
 } from "../schemas/productSchema";
+import { PaginationType } from "../types/paginationType";
+import { ParametersType } from "../types/parametersType";
 import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
 import { checkUser } from "./authService";
@@ -45,7 +42,7 @@ const checkProductById = async (productId: number) => {
 
 const createProductService = async (
   userId: number,
-  req: CreateProductRequest,
+  req: ProductRequest,
   res: Response,
 ) => {
   const createProductRequest = validation(createProductSchema, req);
@@ -70,7 +67,7 @@ const createProductService = async (
     },
   });
 
-  return successResponse<CreateProductResponse>(
+  return successResponse<ProductResponse>(
     res,
     "Product created successfully",
     {
@@ -88,10 +85,75 @@ const createProductService = async (
   );
 };
 
+const getProductService = async (
+  userId: number,
+  req: ParametersType,
+  res: Response,
+) => {
+  await checkUser(userId, res);
+
+  const page = req.page || 1;
+  const limit = req.limit || 10;
+  const search = req.search ?? "";
+
+  const skip = (page - 1) * limit;
+
+  const where = {
+    userId: userId,
+    name: {
+      contains: search,
+    },
+  };
+
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+      skip,
+      include: {
+        user: true,
+      },
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  return successResponse<PaginationType<ProductResponse>>(
+    res,
+    "Products fetched successfully",
+    {
+      data: products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        stock: product.stock,
+        createdAt: product.createdAt,
+        createdBy: {
+          id: product.user.id,
+          name: product.user.name,
+        },
+      })),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    },
+    200,
+  );
+};
+
 const updateProductService = async (
   userId: number,
   productId: number,
-  req: UpdateProductRequest,
+  req: ProductRequest,
   res: Response,
 ) => {
   const updateProductRequest = validation(updateProductSchema, req);
@@ -122,7 +184,7 @@ const updateProductService = async (
     },
   });
 
-  return successResponse<UpdateProductResponse>(
+  return successResponse<ProductResponse>(
     res,
     "Product updated successfully",
     {
@@ -172,9 +234,10 @@ const deleteProductService = async (
 };
 
 export {
-  checkUser,
   checkProductById,
+  checkUser,
   createProductService,
+  getProductService,
   deleteProductService,
   updateProductService,
 };
