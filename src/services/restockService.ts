@@ -1,18 +1,15 @@
 import { Response } from "express";
-import {
-  CreateRestockRequest,
-  CreateRestockResponse,
-  UpdateRestockRequest,
-  UpdateRestockResponse,
-} from "../models/restockModel";
-import { validation } from "../utils/validation";
+import { prisma } from "../config/db";
+import { RestockRequest, RestockResponse } from "../models/restockModel";
 import {
   createRestockSchema,
   updateRestockSchema,
 } from "../schemas/restockSchema";
-import { checkProductById, checkUser } from "./productService";
+import { PaginationType } from "../types/paginationType";
+import { ParametersType } from "../types/parametersType";
 import { errorResponse, successResponse } from "../utils/response";
-import { prisma } from "../config/db";
+import { validation } from "../utils/validation";
+import { checkProductById, checkUser } from "./productService";
 
 const checkRestockById = async (restockId: number) => {
   const restock = await prisma.restock.findUnique({
@@ -26,7 +23,7 @@ const checkRestockById = async (restockId: number) => {
 
 const createRestockService = async (
   userId: number,
-  req: CreateRestockRequest,
+  req: RestockRequest,
   res: Response,
 ) => {
   const createRestockRequest = validation(createRestockSchema, req);
@@ -43,8 +40,17 @@ const createRestockService = async (
     data: {
       productId: createRestockRequest.productId,
       qty: createRestockRequest.qty,
-      costPrice: createRestockRequest.costPrice,
+      costPrice: product.price * createRestockRequest.qty,
       userId: userId,
+      cashflow: {
+        create: {
+          type: "OUT",
+          category: "RESTOCK",
+          amount: product.price * createRestockRequest.qty,
+          note: `Restock ${product.name}`,
+          userId: userId,
+        },
+      },
     },
     include: {
       product: true,
@@ -63,7 +69,7 @@ const createRestockService = async (
     },
   });
 
-  return successResponse<CreateRestockResponse>(
+  return successResponse<RestockResponse>(
     res,
     "Restock created successfully",
     {
@@ -84,10 +90,75 @@ const createRestockService = async (
   );
 };
 
+const getRestockService = async (
+  userId: number,
+  req: ParametersType,
+  res: Response,
+) => {
+  await checkUser(userId, res);
+
+  const page = req.page || 1;
+  const limit = req.limit || 10;
+
+  const skip = (page - 1) * limit;
+
+  const where = {
+    userId: userId,
+  };
+
+  const [restocks, total] = await Promise.all([
+    prisma.restock.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+      skip,
+      include: {
+        user: true,
+        product: true,
+      },
+    }),
+    prisma.restock.count({ where }),
+  ]);
+
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  return successResponse<PaginationType<RestockResponse>>(
+    res,
+    "Restocks fetched successfully",
+    {
+      data: restocks.map((restock) => ({
+        id: restock.id,
+        qty: restock.qty,
+        costPrice: restock.costPrice,
+        product: {
+          id: restock.product.id,
+          name: restock.product.name,
+        },
+        createdAt: restock.createdAt,
+        createdBy: {
+          id: restock.user.id,
+          name: restock.user.name,
+        },
+      })),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    },
+    200,
+  );
+};
+
 const updateRestockService = async (
   userId: number,
   restockId: number,
-  req: UpdateRestockRequest,
+  req: RestockRequest,
   res: Response,
 ) => {
   const updateRestockRequest = validation(updateRestockSchema, req);
@@ -112,7 +183,16 @@ const updateRestockService = async (
     },
     data: {
       qty: updateRestockRequest.qty,
-      costPrice: updateRestockRequest.costPrice,
+      costPrice: product.price * updateRestockRequest.qty,
+      cashflow: {
+        update: {
+          type: "OUT",
+          category: "RESTOCK",
+          amount: product.price * updateRestockRequest.qty,
+          note: `Restock ${product.name}`,
+          userId: userId,
+        },
+      },
     },
     include: {
       product: true,
@@ -131,7 +211,7 @@ const updateRestockService = async (
     },
   });
 
-  return successResponse<UpdateRestockResponse>(
+  return successResponse<RestockResponse>(
     res,
     "Restock updated successfully",
     {
@@ -152,4 +232,4 @@ const updateRestockService = async (
   );
 };
 
-export { createRestockService, updateRestockService };
+export { createRestockService, getRestockService, updateRestockService };

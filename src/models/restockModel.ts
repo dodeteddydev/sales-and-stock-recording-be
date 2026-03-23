@@ -1,12 +1,11 @@
 import { IdAndNameType } from "../types/idAndNameType";
 
-export type CreateRestockRequest = {
+export type RestockRequest = {
   productId: number;
   qty: number;
-  costPrice: number;
 };
 
-export type CreateRestockResponse = {
+export type RestockResponse = {
   id: number;
   qty: number;
   costPrice: number;
@@ -14,7 +13,3 @@ export type CreateRestockResponse = {
   createdAt: Date;
   createdBy: IdAndNameType;
 };
-
-export type UpdateRestockRequest = Omit<CreateRestockRequest, "productId">;
-
-export type UpdateRestockResponse = CreateRestockResponse;
