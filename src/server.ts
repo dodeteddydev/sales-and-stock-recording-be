@@ -3,11 +3,12 @@ import express from "express";
 import { connectDB, disconnectDB } from "./config/db";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
+import { notFoundMiddleware } from "./middlewares/notFoundMiddleware";
 import authRoute from "./routes/authRoute";
+import customerRoute from "./routes/customerRoute";
 import productRoute from "./routes/productRoute";
 import restockRoute from "./routes/restockRoute";
-import customerRoute from "./routes/customerRoute";
-import { notFoundMiddleware } from "./middlewares/notFoundMiddleware";
+import saleRoute from "./routes/saleRoute";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(authMiddleware);
 app.use(productRoute);
 app.use(restockRoute);
 app.use(customerRoute);
+app.use(saleRoute);
 app.use(errorMiddleware);
 app.use(notFoundMiddleware);
 

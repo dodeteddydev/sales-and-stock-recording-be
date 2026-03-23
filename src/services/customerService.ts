@@ -177,4 +177,9 @@ const deleteCustomerService = async (
   return successResponse(res, "Customer deleted successfully", null, 200);
 };
 
-export { createCustomerService, deleteCustomerService, updateCustomerService };
+export {
+  createCustomerService,
+  deleteCustomerService,
+  updateCustomerService,
+  checkCustomerById,
+};
