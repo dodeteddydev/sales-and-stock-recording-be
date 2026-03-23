@@ -19,6 +19,6 @@ export type CreateSaleResponse = {
   createdBy: IdAndNameType;
 };
 
-export type UpdateSaleRequest = Omit<CreateSaleRequest, "productId">;
+export type UpdateSaleRequest = CreateSaleRequest;
 
 export type UpdateSaleResponse = CreateSaleResponse;
