@@ -1,14 +1,13 @@
 import { IdAndNameType } from "../types/idAndNameType";
+import { ParametersType } from "../types/parametersType";
 
-export type CreateSaleRequest = {
+export type SaleRequest = {
   customerId: number;
   productId: number;
   qty: number;
-  price: number;
-  total: number;
 };
 
-export type CreateSaleResponse = {
+export type SaleResponse = {
   id: number;
   qty: number;
   price: number;
@@ -19,6 +18,7 @@ export type CreateSaleResponse = {
   createdBy: IdAndNameType;
 };
 
-export type UpdateSaleRequest = CreateSaleRequest;
-
-export type UpdateSaleResponse = CreateSaleResponse;
+export type SaleParameters = ParametersType & {
+  customerId?: number;
+  productId?: number;
+};

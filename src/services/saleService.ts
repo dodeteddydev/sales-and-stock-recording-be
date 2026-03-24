@@ -1,11 +1,12 @@
 import { Response } from "express";
 import { prisma } from "../config/db";
-import { CreateSaleRequest, CreateSaleResponse } from "../models/saleModel";
+import { SaleParameters, SaleRequest, SaleResponse } from "../models/saleModel";
 import { createSaleSchema, updateSaleSchema } from "../schemas/saleSchema";
 import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
 import { checkCustomerById } from "./customerService";
 import { checkProductById, checkUser } from "./productService";
+import { PaginationType } from "../types/paginationType";
 
 const checkSaleById = async (saleId: number) => {
   const sale = await prisma.sale.findUnique({
@@ -19,7 +20,7 @@ const checkSaleById = async (saleId: number) => {
 
 const createSaleService = async (
   userId: number,
-  req: CreateSaleRequest,
+  req: SaleRequest,
   res: Response,
 ) => {
   const createSaleRequest = validation(createSaleSchema, req);
@@ -38,20 +39,23 @@ const createSaleService = async (
     return errorResponse(res, "Product not found", null, 404);
   }
 
-  const total = createSaleRequest.price * createSaleRequest.qty;
-
-  if (total !== createSaleRequest.total) {
-    return errorResponse(res, "Invalid total", null, 400);
-  }
-
   const sale = await prisma.sale.create({
     data: {
       customerId: createSaleRequest.customerId,
       productId: createSaleRequest.productId,
       qty: createSaleRequest.qty,
-      price: createSaleRequest.price,
-      total: createSaleRequest.total,
+      price: productExist.price,
+      total: productExist.price * createSaleRequest.qty,
       userId: userId,
+      cashflow: {
+        create: {
+          type: "IN",
+          category: "SALE",
+          amount: productExist.price * createSaleRequest.qty,
+          note: `Sale ${productExist.name}`,
+          userId: userId,
+        },
+      },
     },
     include: {
       customer: true,
@@ -60,7 +64,7 @@ const createSaleService = async (
     },
   });
 
-  return successResponse<CreateSaleResponse>(
+  return successResponse<SaleResponse>(
     res,
     "Sale created successfully",
     {
@@ -86,10 +90,85 @@ const createSaleService = async (
   );
 };
 
+const getSaleService = async (
+  userId: number,
+  req: SaleParameters,
+  res: Response,
+) => {
+  await checkUser(userId, res);
+
+  const page = req.page || 1;
+  const limit = req.limit || 10;
+  const customerId = req.customerId;
+  const productId = req.productId;
+
+  const skip = (page - 1) * limit;
+
+  const where = {
+    userId: userId,
+    ...(customerId && { customerId: customerId }),
+    ...(productId && { productId: productId }),
+  };
+
+  const [sales, total] = await Promise.all([
+    prisma.sale.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+      skip,
+      include: {
+        user: true,
+        product: true,
+        customer: true,
+      },
+    }),
+    prisma.sale.count({ where }),
+  ]);
+
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  return successResponse<PaginationType<SaleResponse>>(
+    res,
+    "Sales fetched successfully",
+    {
+      data: sales.map((sale) => ({
+        id: sale.id,
+        qty: sale.qty,
+        price: sale.price,
+        total: sale.total,
+        customer: {
+          id: sale.customer.id,
+          name: sale.customer.name,
+        },
+        product: {
+          id: sale.product.id,
+          name: sale.product.name,
+        },
+        createdAt: sale.createdAt,
+        createdBy: {
+          id: sale.user.id,
+          name: sale.user.name,
+        },
+      })),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    },
+    200,
+  );
+};
+
 const updateSaleService = async (
   userId: number,
   saleId: number,
-  req: CreateSaleRequest,
+  req: SaleRequest,
   res: Response,
 ) => {
   const updateSaleRequest = validation(updateSaleSchema, req);
@@ -114,12 +193,6 @@ const updateSaleService = async (
     return errorResponse(res, "Product not found", null, 404);
   }
 
-  const total = updateSaleRequest.price * updateSaleRequest.qty;
-
-  if (total !== updateSaleRequest.total) {
-    return errorResponse(res, "Invalid total", null, 400);
-  }
-
   const sale = await prisma.sale.update({
     where: {
       id: saleId,
@@ -128,9 +201,18 @@ const updateSaleService = async (
       customerId: updateSaleRequest.customerId,
       productId: updateSaleRequest.productId,
       qty: updateSaleRequest.qty,
-      price: updateSaleRequest.price,
-      total: updateSaleRequest.total,
+      price: productExist.price,
+      total: productExist.price * updateSaleRequest.qty,
       userId: userId,
+      cashflow: {
+        update: {
+          type: "IN",
+          category: "SALE",
+          amount: productExist.price * updateSaleRequest.qty,
+          note: `Sale ${productExist.name}`,
+          userId: userId,
+        },
+      },
     },
     include: {
       customer: true,
@@ -139,7 +221,7 @@ const updateSaleService = async (
     },
   });
 
-  return successResponse<CreateSaleResponse>(res, "Sale updated successfully", {
+  return successResponse<SaleResponse>(res, "Sale updated successfully", {
     id: sale.id,
     qty: sale.qty,
     price: sale.price,
@@ -160,4 +242,4 @@ const updateSaleService = async (
   });
 };
 
-export { createSaleService, updateSaleService };
+export { createSaleService, getSaleService, updateSaleService };
