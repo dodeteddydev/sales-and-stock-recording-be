@@ -1,7 +1,11 @@
 import { NextFunction, Response } from "express";
 import { AuthRequest } from "../models/authModel";
-import { CreateSaleRequest } from "../models/saleModel";
-import { createSaleService, updateSaleService } from "../services/saleService";
+import { SaleParameters, SaleRequest } from "../models/saleModel";
+import {
+  createSaleService,
+  getSaleService,
+  updateSaleService,
+} from "../services/saleService";
 
 const createSaleController = async (
   req: AuthRequest,
@@ -9,8 +13,29 @@ const createSaleController = async (
   next: NextFunction,
 ) => {
   try {
-    const request = req.body as CreateSaleRequest;
+    const request = req.body as SaleRequest;
     const response = await createSaleService(req.userId ?? 0, request, res);
+
+    return response;
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getSaleController = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const request = {
+      page: Number(req.query.page),
+      limit: Number(req.query.limit),
+      customerId: Number(req.query.customerId),
+      productId: Number(req.query.productId),
+    } as SaleParameters;
+
+    const response = await getSaleService(req.userId ?? 0, request, res);
 
     return response;
   } catch (error) {
@@ -24,7 +49,7 @@ const updateSaleController = async (
   next: NextFunction,
 ) => {
   try {
-    const request = req.body as CreateSaleRequest;
+    const request = req.body as SaleRequest;
     const saleId = Number(req.params.id);
 
     const response = await updateSaleService(
@@ -40,4 +65,4 @@ const updateSaleController = async (
   }
 };
 
-export { createSaleController, updateSaleController };
+export { createSaleController, getSaleController, updateSaleController };
