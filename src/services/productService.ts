@@ -58,7 +58,8 @@ const createProductService = async (
   const product = await prisma.product.create({
     data: {
       name: createProductRequest.name,
-      price: createProductRequest.price,
+      basePrice: createProductRequest.basePrice,
+      sellPrice: createProductRequest.sellPrice,
       stock: createProductRequest.stock,
       userId: userId,
     },
@@ -73,7 +74,8 @@ const createProductService = async (
     {
       id: product.id,
       name: product.name,
-      price: product.price,
+      basePrice: product.basePrice,
+      sellPrice: product.sellPrice,
       stock: product.stock,
       createdAt: product.createdAt,
       createdBy: {
@@ -129,7 +131,8 @@ const getProductService = async (
       data: products.map((product) => ({
         id: product.id,
         name: product.name,
-        price: product.price,
+        basePrice: product.basePrice,
+        sellPrice: product.sellPrice,
         stock: product.stock,
         createdAt: product.createdAt,
         createdBy: {
@@ -190,7 +193,8 @@ const updateProductService = async (
     {
       id: product.id,
       name: product.name,
-      price: product.price,
+      basePrice: product.basePrice,
+      sellPrice: product.sellPrice,
       stock: product.stock,
       createdAt: product.createdAt,
       createdBy: {
