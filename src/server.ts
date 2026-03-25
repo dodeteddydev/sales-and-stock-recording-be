@@ -10,6 +10,7 @@ import customerRoute from "./routes/customerRoute";
 import productRoute from "./routes/productRoute";
 import restockRoute from "./routes/restockRoute";
 import saleRoute from "./routes/saleRoute";
+import dashboardRoute from "./routes/dashboardRoute";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(restockRoute);
 app.use(customerRoute);
 app.use(saleRoute);
 app.use(cashFlowRoute);
+app.use(dashboardRoute);
 app.use(errorMiddleware);
 app.use(notFoundMiddleware);
 
