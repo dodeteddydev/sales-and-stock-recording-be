@@ -40,13 +40,13 @@ const createRestockService = async (
     data: {
       productId: createRestockRequest.productId,
       qty: createRestockRequest.qty,
-      costPrice: product.price * createRestockRequest.qty,
+      costPrice: product.basePrice * createRestockRequest.qty,
       userId: userId,
       cashflow: {
         create: {
           type: "OUT",
           category: "RESTOCK",
-          amount: product.price * createRestockRequest.qty,
+          amount: product.basePrice * createRestockRequest.qty,
           note: `Restock ${product.name}`,
           userId: userId,
         },
@@ -183,12 +183,12 @@ const updateRestockService = async (
     },
     data: {
       qty: updateRestockRequest.qty,
-      costPrice: product.price * updateRestockRequest.qty,
+      costPrice: product.basePrice * updateRestockRequest.qty,
       cashflow: {
         update: {
           type: "OUT",
           category: "RESTOCK",
-          amount: product.price * updateRestockRequest.qty,
+          amount: product.basePrice * updateRestockRequest.qty,
           note: `Restock ${product.name}`,
           userId: userId,
         },
