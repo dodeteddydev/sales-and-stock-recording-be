@@ -1,3 +1,4 @@
+import cors from "cors";
 import "dotenv/config";
 import express from "express";
 import { connectDB, disconnectDB } from "./config/db";
@@ -7,12 +8,19 @@ import { notFoundMiddleware } from "./middlewares/notFoundMiddleware";
 import authRoute from "./routes/authRoute";
 import cashFlowRoute from "./routes/cashFlowRoute";
 import customerRoute from "./routes/customerRoute";
+import dashboardRoute from "./routes/dashboardRoute";
 import productRoute from "./routes/productRoute";
 import restockRoute from "./routes/restockRoute";
 import saleRoute from "./routes/saleRoute";
-import dashboardRoute from "./routes/dashboardRoute";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
