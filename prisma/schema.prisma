@@ -7,6 +7,97 @@ datasource db {
   provider = "mysql"
 }
 
+model User {
+  id        Int        @id @default(autoincrement())
+  username  String     @unique
+  password  String
+  role      Role
+  name      String
+  cashflows CashFlow[]
+  customers Customer[]
+  products  Product[]
+  restocks  Restock[]
+  sales     Sale[]
+}
+
+model Product {
+  id        Int       @id @default(autoincrement())
+  name      String
+  stock     Int
+  createdAt DateTime  @default(now())
+  userId    Int
+  basePrice Int
+  sellPrice Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restocks  Restock[]
+  sales     Sale[]
+
+  @@index([userId])
+}
+
+model Restock {
+  id        Int       @id @default(autoincrement())
+  qty       Int
+  costPrice Int
+  createdAt DateTime  @default(now())
+  userId    Int
+  productId Int
+  cashflow  CashFlow?
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([productId])
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String   @unique
+  createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sales     Sale[]
+
+  @@index([userId])
+}
+
+model Sale {
+  id         Int       @id @default(autoincrement())
+  qty        Int
+  price      Int
+  total      Int
+  createdAt  DateTime  @default(now())
+  userId     Int
+  productId  Int
+  customerId Int
+  cashflow   CashFlow?
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([productId])
+  @@index([customerId])
+}
+
+model CashFlow {
+  id        Int      @id @default(autoincrement())
+  type      Type
+  category  Category
+  amount    Int
+  note      String
+  createdAt DateTime @default(now())
+  userId    Int
+  restockId Int?     @unique
+  saleId    Int?     @unique
+  restock   Restock? @relation(fields: [restockId], references: [id])
+  sale      Sale?    @relation(fields: [saleId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 enum Role {
   OWNER
 }
@@ -21,104 +112,4 @@ enum Category {
   RESTOCK
   LOAN
   RETURN
-}
-
-model User {
-  id        Int @id @default(autoincrement())
-  name      String
-  username  String @unique
-  password  String
-  role      Role
-
-  products  Product[]
-  restocks  Restock[]
-  customers Customer[]
-  sales     Sale[]
-  cashflows  CashFlow[]
-}
-
-model Product {
-  id        Int @id @default(autoincrement())
-  name      String
-  basePrice Int
-  sellPrice Int
-  stock     Int
-  createdAt DateTime @default(now())
-
-  restocks  Restock[]
-  sales     Sale[]
-
-
-  userId    Int
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Restock {
-  id        Int @id @default(autoincrement())
-  qty       Int
-  costPrice Int
-  createdAt DateTime @default(now())
-
-  userId    Int
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId Int
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cashflow   CashFlow?
-
-  @@index([userId])
-  @@index([productId])
-}
-
-model Customer {
-  id        Int @id @default(autoincrement())
-  name      String
-  phone     String @unique
-  createdAt DateTime @default(now())
-
-  sales     Sale[]
-
-  userId    Int
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Sale {
-  id         Int @id @default(autoincrement())
-  qty        Int
-  price      Int
-  total      Int
-  createdAt  DateTime @default(now())
-
-  userId     Int
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId  Int
-  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  customerId Int
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  cashflow   CashFlow?
-
-  @@index([userId])
-  @@index([productId])
-  @@index([customerId])
-}
-
-model CashFlow {
-  id        Int @id @default(autoincrement())
-  type      Type
-  category  Category
-  amount    Int
-  note      String
-  createdAt DateTime @default(now())
-
-  userId    Int
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restockId  Int?      @unique
-  restock    Restock?  @relation(fields: [restockId], references: [id])
-  saleId     Int?      @unique
-  sale       Sale?     @relation(fields: [saleId], references: [id])
-
-  @@index([userId])
 }
