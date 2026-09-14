@@ -1,14 +1,12 @@
 import { Response } from "express";
 import { prisma } from "../config/db";
-import {
-  CreateCustomerRequest,
-  CreateCustomerResponse,
-  UpdateCustomerResponse,
-} from "../models/customerModel";
+import { CustomerRequest, CustomerResponse } from "../models/customerModel";
 import { createCustomerSchema } from "../schemas/customerSchema";
 import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
 import { checkUser } from "./authService";
+import { ParametersType } from "../types/parametersType";
+import { PaginationType } from "../types/paginationType";
 
 const checkCustomerByPhone = async (phone: string) => {
   const customer = await prisma.customer.findUnique({
@@ -40,7 +38,7 @@ const checkCustomerById = async (id: number) => {
 
 const createCustomerService = async (
   userId: number,
-  req: CreateCustomerRequest,
+  req: CustomerRequest,
   res: Response,
 ) => {
   const createCustomerRequest = validation(createCustomerSchema, req);
@@ -71,7 +69,7 @@ const createCustomerService = async (
     },
   });
 
-  return successResponse<CreateCustomerResponse>(
+  return successResponse<CustomerResponse>(
     res,
     "Customer created successfully",
     {
@@ -88,10 +86,67 @@ const createCustomerService = async (
   );
 };
 
+const getCustomerService = async (req: ParametersType, res: Response) => {
+  const page = req.page || 1;
+  const limit = req.limit || 10;
+  const search = req.search ?? "";
+
+  const skip = (page - 1) * limit;
+
+  const where = {
+    name: {
+      contains: search,
+    },
+  };
+
+  const [customers, total] = await Promise.all([
+    prisma.customer.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+      skip,
+      include: {
+        user: true,
+      },
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  return successResponse<PaginationType<CustomerResponse>>(
+    res,
+    "Customers fetched successfully",
+    {
+      data: customers.map((customer) => ({
+        id: customer.id,
+        name: customer.name,
+        phone: customer.phone,
+        createdAt: customer.createdAt,
+        createdBy: {
+          id: customer.user.id,
+          name: customer.user.name,
+        },
+      })),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    },
+    200,
+  );
+};
+
 const updateCustomerService = async (
   userId: number,
   customerId: number,
-  req: CreateCustomerRequest,
+  req: CustomerRequest,
   res: Response,
 ) => {
   const updateCustomerRequest = validation(createCustomerSchema, req);
@@ -129,7 +184,7 @@ const updateCustomerService = async (
     },
   });
 
-  return successResponse<UpdateCustomerResponse>(
+  return successResponse<CustomerResponse>(
     res,
     "Customer updated successfully",
     {
@@ -178,8 +233,9 @@ const deleteCustomerService = async (
 };
 
 export {
+  checkCustomerById,
   createCustomerService,
+  getCustomerService,
   deleteCustomerService,
   updateCustomerService,
-  checkCustomerById,
 };

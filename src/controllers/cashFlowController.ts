@@ -1,6 +1,6 @@
 import { NextFunction, Response } from "express";
 import { AuthRequest } from "../models/authModel";
-import { CreateCashFlowRequest } from "../models/cashFlowModel";
+import { CashFlowRequest } from "../models/cashFlowModel";
 import {
   createCashFlowService,
   updateCashFlowService,
@@ -12,7 +12,7 @@ const createCashFlowController = async (
   next: NextFunction,
 ) => {
   try {
-    const request = req.body as CreateCashFlowRequest;
+    const request = req.body as CashFlowRequest;
     const response = await createCashFlowService(req.userId ?? 0, request, res);
 
     return response;
@@ -27,7 +27,7 @@ const updateCashFlowController = async (
   next: NextFunction,
 ) => {
   try {
-    const request = req.body as CreateCashFlowRequest;
+    const request = req.body as CashFlowRequest;
     const cashFlowId = Number(req.params.id);
 
     const response = await updateCashFlowService(

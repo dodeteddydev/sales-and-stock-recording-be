@@ -1,18 +1,14 @@
 import { IdAndNameType } from "../types/idAndNameType";
 
-export type CreateCustomerRequest = {
+export type CustomerRequest = {
   name: string;
   phone: string;
 };
 
-export type CreateCustomerResponse = {
+export type CustomerResponse = {
   id: number;
   name: string;
   phone: string;
   createdAt: Date;
   createdBy: IdAndNameType;
 };
-
-export type UpdateCustomerRequest = CreateCustomerRequest;
-
-export type UpdateCustomerResponse = CreateCustomerResponse;
