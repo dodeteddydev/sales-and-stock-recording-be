@@ -1,14 +1,13 @@
 import { NextFunction, Response } from "express";
 import { AuthRequest } from "../models/authModel";
-import {
-  CreateCustomerRequest,
-  UpdateCustomerRequest,
-} from "../models/customerModel";
+import { CustomerRequest } from "../models/customerModel";
 import {
   createCustomerService,
   deleteCustomerService,
+  getCustomerService,
   updateCustomerService,
 } from "../services/customerService";
+import { ParametersType } from "../types/parametersType";
 
 const createCustomerController = async (
   req: AuthRequest,
@@ -16,8 +15,28 @@ const createCustomerController = async (
   next: NextFunction,
 ) => {
   try {
-    const request = req.body as CreateCustomerRequest;
+    const request = req.body as CustomerRequest;
     const response = await createCustomerService(req.userId ?? 0, request, res);
+
+    return response;
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getCustomerController = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const request = {
+      search: req.query.search,
+      page: Number(req.query.page),
+      limit: Number(req.query.limit),
+    } as ParametersType;
+
+    const response = await getCustomerService(request, res);
 
     return response;
   } catch (error) {
@@ -31,7 +50,7 @@ const updateCustomerController = async (
   next: NextFunction,
 ) => {
   try {
-    const request = req.body as UpdateCustomerRequest;
+    const request = req.body as CustomerRequest;
     const customerId = Number(req.params.id);
     const response = await updateCustomerService(
       req.userId ?? 0,
@@ -67,6 +86,7 @@ const deleteCustomerController = async (
 
 export {
   createCustomerController,
-  updateCustomerController,
   deleteCustomerController,
+  getCustomerController,
+  updateCustomerController,
 };

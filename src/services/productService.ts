@@ -87,13 +87,7 @@ const createProductService = async (
   );
 };
 
-const getProductService = async (
-  userId: number,
-  req: ParametersType,
-  res: Response,
-) => {
-  await checkUser(userId, res);
-
+const getProductService = async (req: ParametersType, res: Response) => {
   const page = req.page || 1;
   const limit = req.limit || 10;
   const search = req.search ?? "";
@@ -101,7 +95,6 @@ const getProductService = async (
   const skip = (page - 1) * limit;
 
   const where = {
-    userId: userId,
     name: {
       contains: search,
     },

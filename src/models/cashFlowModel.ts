@@ -1,14 +1,14 @@
 import { Category, Type } from "../../generated/prisma/enums";
 import { IdAndNameType } from "../types/idAndNameType";
 
-export type CreateCashFlowRequest = {
+export type CashFlowRequest = {
   type: Type;
   category: Category;
   amount: number;
   note: string;
 };
 
-export type CreateCashFlowResponse = {
+export type CashFlowResponse = {
   id: number;
   type: Type;
   category: Category;
@@ -17,7 +17,3 @@ export type CreateCashFlowResponse = {
   createdAt: Date;
   createdBy: IdAndNameType;
 };
-
-export type UpdateCashFlowRequest = CreateCashFlowRequest;
-
-export type UpdateCashFlowResponse = CreateCashFlowResponse;

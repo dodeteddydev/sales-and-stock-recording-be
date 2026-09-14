@@ -1,9 +1,6 @@
 import { Response } from "express";
 import { prisma } from "../config/db";
-import {
-  CreateCashFlowRequest,
-  CreateCashFlowResponse,
-} from "../models/cashFlowModel";
+import { CashFlowRequest, CashFlowResponse } from "../models/cashFlowModel";
 import {
   createCashFlowSchema,
   updateCashFlowSchema,
@@ -25,7 +22,7 @@ const checkCashFlowById = async (cashFlowId: number) => {
 
 const createCashFlowService = async (
   userId: number,
-  req: CreateCashFlowRequest,
+  req: CashFlowRequest,
   res: Response,
 ) => {
   const createCashFlowRequest = validation(createCashFlowSchema, req);
@@ -61,7 +58,7 @@ const createCashFlowService = async (
     },
   });
 
-  return successResponse<CreateCashFlowResponse>(
+  return successResponse<CashFlowResponse>(
     res,
     "Cash flow created successfully",
     {
@@ -83,7 +80,7 @@ const createCashFlowService = async (
 const updateCashFlowService = async (
   userId: number,
   CashFlowId: number,
-  req: CreateCashFlowRequest,
+  req: CashFlowRequest,
   res: Response,
 ) => {
   const updateCashFlowRequest = validation(updateCashFlowSchema, req);

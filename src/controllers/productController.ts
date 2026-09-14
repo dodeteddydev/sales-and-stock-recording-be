@@ -36,7 +36,7 @@ const getProductController = async (
       limit: Number(req.query.limit),
     } as ParametersType;
 
-    const response = await getProductService(req.userId ?? 0, request, res);
+    const response = await getProductService(request, res);
 
     return response;
   } catch (error) {
@@ -86,7 +86,7 @@ const deleteProductController = async (
 
 export {
   createProductController,
-  getProductController,
   deleteProductController,
+  getProductController,
   updateProductController,
 };
