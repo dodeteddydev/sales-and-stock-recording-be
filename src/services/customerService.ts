@@ -2,11 +2,11 @@ import { Response } from "express";
 import { prisma } from "../config/db";
 import { CustomerRequest, CustomerResponse } from "../models/customerModel";
 import { createCustomerSchema } from "../schemas/customerSchema";
+import { PaginationType } from "../types/paginationType";
+import { ParametersType } from "../types/parametersType";
 import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
 import { checkUser } from "./authService";
-import { ParametersType } from "../types/parametersType";
-import { PaginationType } from "../types/paginationType";
 
 const checkCustomerByPhone = async (phone: string) => {
   const customer = await prisma.customer.findUnique({
@@ -102,16 +102,14 @@ const getCustomerService = async (req: ParametersType, res: Response) => {
   const [customers, total] = await Promise.all([
     prisma.customer.findMany({
       where,
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit,
       skip,
       include: {
         user: true,
       },
     }),
-    prisma.product.count({ where }),
+    prisma.customer.count({ where }),
   ]);
 
   const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
@@ -235,7 +233,7 @@ const deleteCustomerService = async (
 export {
   checkCustomerById,
   createCustomerService,
-  getCustomerService,
   deleteCustomerService,
+  getCustomerService,
   updateCustomerService,
 };
