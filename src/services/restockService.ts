@@ -109,9 +109,7 @@ const getRestockService = async (
   const [restocks, total] = await Promise.all([
     prisma.restock.findMany({
       where,
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit,
       skip,
       include: {

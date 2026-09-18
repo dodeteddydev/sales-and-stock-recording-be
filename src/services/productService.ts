@@ -103,9 +103,7 @@ const getProductService = async (req: ParametersType, res: Response) => {
   const [products, total] = await Promise.all([
     prisma.product.findMany({
       where,
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit,
       skip,
       include: {
