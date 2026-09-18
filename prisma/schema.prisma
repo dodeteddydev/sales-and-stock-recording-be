@@ -8,94 +8,123 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  username  String     @unique
-  password  String
-  role      Role
-  name      String
-  cashflows CashFlow[]
-  customers Customer[]
-  products  Product[]
-  restocks  Restock[]
-  sales     Sale[]
+  id              Int       @id @default(autoincrement())
+  username        String    @unique
+  password        String
+  role            Role
+  name            String
+  productsCreated Product[] @relation("ProductCreatedBy")
+  productsUpdated Product[] @relation("ProductUpdatedBy")
+
+  restocksCreated Restock[] @relation("RestockCreatedBy")
+  restocksUpdated Restock[] @relation("RestockUpdatedBy")
+
+  customersCreated Customer[] @relation("CustomerCreatedBy")
+  customersUpdated Customer[] @relation("CustomerUpdatedBy")
+
+  salesCreated Sale[] @relation("SaleCreatedBy")
+  salesUpdated Sale[] @relation("SaleUpdatedBy")
+
+  cashflowsCreated CashFlow[] @relation("CashFlowCreatedBy")
+  cashflowsUpdated CashFlow[] @relation("CashFlowUpdatedBy")
 }
 
 model Product {
-  id        Int       @id @default(autoincrement())
-  name      String
-  stock     Int
-  createdAt DateTime  @default(now())
-  userId    Int
-  basePrice Int
-  sellPrice Int
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restocks  Restock[]
-  sales     Sale[]
+  id          Int       @id @default(autoincrement())
+  name        String
+  stock       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+  updatedById Int?
+  basePrice   Int
+  sellPrice   Int
+  createdBy   User      @relation("ProductCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedBy   User?     @relation("ProductUpdatedBy", fields: [updatedById], references: [id])
+  restocks    Restock[]
+  sales       Sale[]
 
-  @@index([userId])
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model Restock {
-  id        Int       @id @default(autoincrement())
-  qty       Int
-  costPrice Int
-  createdAt DateTime  @default(now())
-  userId    Int
-  productId Int
-  cashflow  CashFlow?
-  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          Int       @id @default(autoincrement())
+  qty         Int
+  costPrice   Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+  updatedById Int?
+  productId   Int
+  cashflow    CashFlow?
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation("RestockCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedBy   User?     @relation("RestockUpdatedBy", fields: [updatedById], references: [id])
 
-  @@index([userId])
+  @@index([createdById])
+  @@index([updatedById])
   @@index([productId])
 }
 
 model Customer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  phone     String   @unique
-  createdAt DateTime @default(now())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sales     Sale[]
+  id          Int      @id @default(autoincrement())
+  name        String
+  phone       String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById Int
+  updatedById Int?
+  createdBy   User     @relation("CustomerCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedBy   User?    @relation("CustomerUpdatedBy", fields: [updatedById], references: [id])
+  sales       Sale[]
 
-  @@index([userId])
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model Sale {
-  id         Int       @id @default(autoincrement())
-  qty        Int
-  price      Int
-  total      Int
-  createdAt  DateTime  @default(now())
-  userId     Int
-  productId  Int
-  customerId Int
-  cashflow   CashFlow?
-  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          Int       @id @default(autoincrement())
+  qty         Int
+  price       Int
+  total       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+  updatedById Int?
+  productId   Int
+  customerId  Int
+  cashflow    CashFlow?
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation("SaleCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedBy   User?     @relation("SaleUpdatedBy", fields: [updatedById], references: [id])
 
-  @@index([userId])
+  @@index([createdById])
+  @@index([updatedById])
   @@index([productId])
   @@index([customerId])
 }
 
 model CashFlow {
-  id        Int      @id @default(autoincrement())
-  type      Type
-  category  Category
-  amount    Int
-  note      String
-  createdAt DateTime @default(now())
-  userId    Int
-  restockId Int?     @unique
-  saleId    Int?     @unique
-  restock   Restock? @relation(fields: [restockId], references: [id])
-  sale      Sale?    @relation(fields: [saleId], references: [id])
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          Int      @id @default(autoincrement())
+  type        Type
+  category    Category
+  amount      Int
+  note        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById Int
+  updatedById Int?
+  restockId   Int?     @unique
+  saleId      Int?     @unique
+  restock     Restock? @relation(fields: [restockId], references: [id])
+  sale        Sale?    @relation(fields: [saleId], references: [id])
+  createdBy   User     @relation("CashFlowCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedBy   User?    @relation("CashFlowUpdatedBy", fields: [updatedById], references: [id])
 
-  @@index([userId])
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 enum Role {

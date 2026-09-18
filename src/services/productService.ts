@@ -57,14 +57,11 @@ const createProductService = async (
 
   const product = await prisma.product.create({
     data: {
-      name: createProductRequest.name,
-      basePrice: createProductRequest.basePrice,
-      sellPrice: createProductRequest.sellPrice,
-      stock: createProductRequest.stock,
-      userId: userId,
+      ...createProductRequest,
+      createdById: userId,
     },
     include: {
-      user: true,
+      createdBy: true,
     },
   });
 
@@ -78,10 +75,12 @@ const createProductService = async (
       sellPrice: product.sellPrice,
       stock: product.stock,
       createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
       createdBy: {
-        id: product.user.id,
-        name: product.user.name,
+        id: product.createdBy.id,
+        name: product.createdBy.name,
       },
+      updatedBy: null,
     },
     201,
   );
@@ -107,7 +106,8 @@ const getProductService = async (req: ParametersType, res: Response) => {
       take: limit,
       skip,
       include: {
-        user: true,
+        createdBy: true,
+        updatedBy: true,
       },
     }),
     prisma.product.count({ where }),
@@ -126,10 +126,17 @@ const getProductService = async (req: ParametersType, res: Response) => {
         sellPrice: product.sellPrice,
         stock: product.stock,
         createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
         createdBy: {
-          id: product.user.id,
-          name: product.user.name,
+          id: product.createdBy.id,
+          name: product.createdBy.name,
         },
+        updatedBy: product.updatedBy
+          ? {
+              id: product.updatedBy.id,
+              name: product.updatedBy.name,
+            }
+          : null,
       })),
       meta: {
         page,
@@ -172,9 +179,13 @@ const updateProductService = async (
     where: {
       id: productId,
     },
-    data: updateProductRequest,
+    data: {
+      ...updateProductRequest,
+      updatedById: userId,
+    },
     include: {
-      user: true,
+      createdBy: true,
+      updatedBy: true,
     },
   });
 
@@ -188,10 +199,17 @@ const updateProductService = async (
       sellPrice: product.sellPrice,
       stock: product.stock,
       createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
       createdBy: {
-        id: product.user.id,
-        name: product.user.name,
+        id: product.createdBy.id,
+        name: product.createdBy.name,
       },
+      updatedBy: product.updatedBy
+        ? {
+            id: product.updatedBy.id,
+            name: product.updatedBy.name,
+          }
+        : null,
     },
     200,
   );

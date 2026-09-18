@@ -47,14 +47,11 @@ const createCashFlowService = async (
 
   const cashFlow = await prisma.cashFlow.create({
     data: {
-      type: createCashFlowRequest.type,
-      category: createCashFlowRequest.category,
-      amount: createCashFlowRequest.amount,
-      note: createCashFlowRequest.note,
-      userId: userId,
+      ...createCashFlowRequest,
+      createdById: userId,
     },
     include: {
-      user: true,
+      createdBy: true,
     },
   });
 
@@ -68,10 +65,12 @@ const createCashFlowService = async (
       amount: cashFlow.amount,
       note: cashFlow.note,
       createdAt: cashFlow.createdAt,
+      updatedAt: cashFlow.updatedAt,
       createdBy: {
-        id: cashFlow.user.id,
-        name: cashFlow.user.name,
+        id: cashFlow.createdBy.id,
+        name: cashFlow.createdBy.name,
       },
+      updatedBy: null,
     },
     201,
   );
@@ -114,13 +113,12 @@ const updateCashFlowService = async (
       id: CashFlowId,
     },
     data: {
-      type: updateCashFlowRequest.type,
-      category: updateCashFlowRequest.category,
-      amount: updateCashFlowRequest.amount,
-      note: updateCashFlowRequest.note,
+      ...updateCashFlowRequest,
+      updatedById: userId,
     },
     include: {
-      user: true,
+      createdBy: true,
+      updatedBy: true,
     },
   });
 
@@ -131,10 +129,17 @@ const updateCashFlowService = async (
     amount: cashFlow.amount,
     note: cashFlow.note,
     createdAt: cashFlow.createdAt,
+    updatedAt: cashFlow.updatedAt,
     createdBy: {
-      id: cashFlow.user.id,
-      name: cashFlow.user.name,
+      id: cashFlow.createdBy.id,
+      name: cashFlow.createdBy.name,
     },
+    updatedBy: cashFlow.updatedBy
+      ? {
+          id: cashFlow.updatedBy.id,
+          name: cashFlow.updatedBy.name,
+        }
+      : null,
   });
 };
 

@@ -16,6 +16,8 @@ export type SaleResponse = {
   product: IdAndNameType;
   createdAt: Date;
   createdBy: IdAndNameType;
+  updatedAt: Date;
+  updatedBy: IdAndNameType | null;
 };
 
 export type SaleParameters = ParametersType & {

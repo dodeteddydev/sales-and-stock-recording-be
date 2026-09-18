@@ -15,4 +15,6 @@ export type ProductResponse = {
   stock: number;
   createdAt: Date;
   createdBy: IdAndNameType;
+  updatedAt: Date;
+  updatedBy: IdAndNameType | null;
 };

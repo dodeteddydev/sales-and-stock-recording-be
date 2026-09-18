@@ -41,20 +41,20 @@ const createRestockService = async (
       productId: createRestockRequest.productId,
       qty: createRestockRequest.qty,
       costPrice: product.basePrice * createRestockRequest.qty,
-      userId: userId,
+      createdById: userId,
       cashflow: {
         create: {
           type: "OUT",
           category: "RESTOCK",
           amount: product.basePrice * createRestockRequest.qty,
           note: `Restock ${product.name}`,
-          userId: userId,
+          createdById: userId,
         },
       },
     },
     include: {
       product: true,
-      user: true,
+      createdBy: true,
     },
   });
 
@@ -81,10 +81,12 @@ const createRestockService = async (
         name: restock.product.name,
       },
       createdAt: restock.createdAt,
+      updatedAt: restock.updatedAt,
       createdBy: {
-        id: restock.user.id,
-        name: restock.user.name,
+        id: restock.createdBy.id,
+        name: restock.createdBy.name,
       },
+      updatedBy: null,
     },
     200,
   );
@@ -103,7 +105,7 @@ const getRestockService = async (
   const skip = (page - 1) * limit;
 
   const where = {
-    userId: userId,
+    createdById: userId,
   };
 
   const [restocks, total] = await Promise.all([
@@ -113,7 +115,8 @@ const getRestockService = async (
       take: limit,
       skip,
       include: {
-        user: true,
+        createdBy: true,
+        updatedBy: true,
         product: true,
       },
     }),
@@ -135,10 +138,17 @@ const getRestockService = async (
           name: restock.product.name,
         },
         createdAt: restock.createdAt,
+        updatedAt: restock.updatedAt,
         createdBy: {
-          id: restock.user.id,
-          name: restock.user.name,
+          id: restock.createdBy.id,
+          name: restock.createdBy.name,
         },
+        updatedBy: restock.updatedBy
+          ? {
+              id: restock.updatedBy.id,
+              name: restock.updatedBy.name,
+            }
+          : null,
       })),
       meta: {
         page,
@@ -182,19 +192,21 @@ const updateRestockService = async (
     data: {
       qty: updateRestockRequest.qty,
       costPrice: product.basePrice * updateRestockRequest.qty,
+      updatedById: userId,
       cashflow: {
         update: {
           type: "OUT",
           category: "RESTOCK",
           amount: product.basePrice * updateRestockRequest.qty,
           note: `Restock ${product.name}`,
-          userId: userId,
+          updatedById: userId,
         },
       },
     },
     include: {
       product: true,
-      user: true,
+      createdBy: true,
+      updatedBy: true,
     },
   });
 
@@ -221,10 +233,17 @@ const updateRestockService = async (
         name: restock.product.name,
       },
       createdAt: restock.createdAt,
+      updatedAt: restock.updatedAt,
       createdBy: {
-        id: restock.user.id,
-        name: restock.user.name,
+        id: restock.createdBy.id,
+        name: restock.createdBy.name,
       },
+      updatedBy: restock.updatedBy
+        ? {
+            id: restock.updatedBy.id,
+            name: restock.updatedBy.name,
+          }
+        : null,
     },
     200,
   );

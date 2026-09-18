@@ -16,4 +16,6 @@ export type CashFlowResponse = {
   note: string;
   createdAt: Date;
   createdBy: IdAndNameType;
+  updatedAt: Date;
+  updatedBy: IdAndNameType | null;
 };

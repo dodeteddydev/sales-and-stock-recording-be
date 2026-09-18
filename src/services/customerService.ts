@@ -24,7 +24,7 @@ const checkCustomerById = async (id: number) => {
       id: id,
     },
     include: {
-      user: true,
+      createdBy: true,
       _count: {
         select: {
           sales: true,
@@ -60,12 +60,11 @@ const createCustomerService = async (
 
   const customer = await prisma.customer.create({
     data: {
-      name: createCustomerRequest.name,
-      phone: createCustomerRequest.phone,
-      userId: userId,
+      ...createCustomerRequest,
+      createdById: userId,
     },
     include: {
-      user: true,
+      createdBy: true,
     },
   });
 
@@ -77,10 +76,12 @@ const createCustomerService = async (
       name: customer.name,
       phone: customer.phone,
       createdAt: customer.createdAt,
+      updatedAt: customer.updatedAt,
       createdBy: {
-        id: customer.user.id,
-        name: customer.user.name,
+        id: customer.createdBy.id,
+        name: customer.createdBy.name,
       },
+      updatedBy: null,
     },
     201,
   );
@@ -106,7 +107,8 @@ const getCustomerService = async (req: ParametersType, res: Response) => {
       take: limit,
       skip,
       include: {
-        user: true,
+        createdBy: true,
+        updatedBy: true,
       },
     }),
     prisma.customer.count({ where }),
@@ -123,10 +125,17 @@ const getCustomerService = async (req: ParametersType, res: Response) => {
         name: customer.name,
         phone: customer.phone,
         createdAt: customer.createdAt,
+        updatedAt: customer.updatedAt,
         createdBy: {
-          id: customer.user.id,
-          name: customer.user.name,
+          id: customer.createdBy.id,
+          name: customer.createdBy.name,
         },
+        updatedBy: customer.updatedBy
+          ? {
+              id: customer.updatedBy.id,
+              name: customer.updatedBy.name,
+            }
+          : null,
       })),
       meta: {
         page,
@@ -176,9 +185,13 @@ const updateCustomerService = async (
     where: {
       id: customerId,
     },
-    data: updateCustomerRequest,
+    data: {
+      ...updateCustomerRequest,
+      updatedById: userId,
+    },
     include: {
-      user: true,
+      createdBy: true,
+      updatedBy: true,
     },
   });
 
@@ -190,10 +203,17 @@ const updateCustomerService = async (
       name: customer.name,
       phone: customer.phone,
       createdAt: customer.createdAt,
+      updatedAt: customer.updatedAt,
       createdBy: {
-        id: customer.user.id,
-        name: customer.user.name,
+        id: customer.createdBy.id,
+        name: customer.createdBy.name,
       },
+      updatedBy: customer.updatedBy
+        ? {
+            id: customer.updatedBy.id,
+            name: customer.updatedBy.name,
+          }
+        : null,
     },
     200,
   );

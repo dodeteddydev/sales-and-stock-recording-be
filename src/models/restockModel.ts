@@ -12,4 +12,6 @@ export type RestockResponse = {
   product: IdAndNameType;
   createdAt: Date;
   createdBy: IdAndNameType;
+  updatedAt: Date;
+  updatedBy: IdAndNameType | null;
 };

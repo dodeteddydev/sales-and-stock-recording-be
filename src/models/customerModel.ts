@@ -11,4 +11,6 @@ export type CustomerResponse = {
   phone: string;
   createdAt: Date;
   createdBy: IdAndNameType;
+  updatedAt: Date;
+  updatedBy: IdAndNameType | null;
 };
