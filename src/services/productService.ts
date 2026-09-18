@@ -27,7 +27,7 @@ const checkProductById = async (productId: number) => {
       id: productId,
     },
     include: {
-      user: true,
+      createdBy: true,
       _count: {
         select: {
           restocks: true,

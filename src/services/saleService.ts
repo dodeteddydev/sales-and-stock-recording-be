@@ -46,21 +46,21 @@ const createSaleService = async (
       qty: createSaleRequest.qty,
       price: productExist.sellPrice,
       total: productExist.sellPrice * createSaleRequest.qty,
-      userId: userId,
+      createdById: userId,
       cashflow: {
         create: {
           type: "IN",
           category: "SALE",
           amount: productExist.sellPrice * createSaleRequest.qty,
           note: `Sale ${productExist.name}`,
-          userId: userId,
+          createdById: userId,
         },
       },
     },
     include: {
       customer: true,
       product: true,
-      user: true,
+      createdBy: true,
     },
   });
 
@@ -81,10 +81,12 @@ const createSaleService = async (
         name: sale.product.name,
       },
       createdAt: sale.createdAt,
+      updatedAt: sale.updatedAt,
       createdBy: {
-        id: sale.user.id,
-        name: sale.user.name,
+        id: sale.createdBy.id,
+        name: sale.createdBy.name,
       },
+      updatedBy: null,
     },
     201,
   );
@@ -105,7 +107,7 @@ const getSaleService = async (
   const skip = (page - 1) * limit;
 
   const where = {
-    userId: userId,
+    createdById: userId,
     ...(customerId && { customerId: customerId }),
     ...(productId && { productId: productId }),
   };
@@ -117,7 +119,8 @@ const getSaleService = async (
       take: limit,
       skip,
       include: {
-        user: true,
+        createdBy: true,
+        updatedBy: true,
         product: true,
         customer: true,
       },
@@ -145,10 +148,17 @@ const getSaleService = async (
           name: sale.product.name,
         },
         createdAt: sale.createdAt,
+        updatedAt: sale.updatedAt,
         createdBy: {
-          id: sale.user.id,
-          name: sale.user.name,
+          id: sale.createdBy.id,
+          name: sale.createdBy.name,
         },
+        updatedBy: sale.updatedBy
+          ? {
+              id: sale.updatedBy.id,
+              name: sale.updatedBy.name,
+            }
+          : null,
       })),
       meta: {
         page,
@@ -201,21 +211,22 @@ const updateSaleService = async (
       qty: updateSaleRequest.qty,
       price: productExist.sellPrice,
       total: productExist.sellPrice * updateSaleRequest.qty,
-      userId: userId,
+      updatedById: userId,
       cashflow: {
         update: {
           type: "IN",
           category: "SALE",
           amount: productExist.sellPrice * updateSaleRequest.qty,
           note: `Sale ${productExist.name}`,
-          userId: userId,
+          updatedById: userId,
         },
       },
     },
     include: {
       customer: true,
       product: true,
-      user: true,
+      createdBy: true,
+      updatedBy: true,
     },
   });
 
@@ -233,10 +244,17 @@ const updateSaleService = async (
       name: sale.product.name,
     },
     createdAt: sale.createdAt,
+    updatedAt: sale.updatedAt,
     createdBy: {
-      id: sale.user.id,
-      name: sale.user.name,
+      id: sale.createdBy.id,
+      name: sale.createdBy.name,
     },
+    updatedBy: sale.updatedBy
+      ? {
+          id: sale.updatedBy.id,
+          name: sale.updatedBy.name,
+        }
+      : null,
   });
 };
 
