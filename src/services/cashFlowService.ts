@@ -1,14 +1,19 @@
 import { Response } from "express";
+import { Category, Type } from "../../generated/prisma/enums";
 import { prisma } from "../config/db";
-import { CashFlowRequest, CashFlowResponse } from "../models/cashFlowModel";
+import {
+  CashFlowParameters,
+  CashFlowRequest,
+  CashFlowResponse,
+} from "../models/cashFlowModel";
 import {
   createCashFlowSchema,
   updateCashFlowSchema,
 } from "../schemas/cashFlowSchema";
+import { PaginationType } from "../types/paginationType";
 import { errorResponse, successResponse } from "../utils/response";
 import { validation } from "../utils/validation";
 import { checkUser } from "./productService";
-import { Category, Type } from "../../generated/prisma/enums";
 
 const checkCashFlowById = async (cashFlowId: number) => {
   const cashFlow = await prisma.cashFlow.findUnique({
@@ -73,6 +78,77 @@ const createCashFlowService = async (
       updatedBy: null,
     },
     201,
+  );
+};
+
+const getCashFlowService = async (
+  userId: number,
+  req: CashFlowParameters,
+  res: Response,
+) => {
+  await checkUser(userId, res);
+
+  const page = req.page || 1;
+  const limit = req.limit || 10;
+  const type = req.type;
+  const category = req.category;
+
+  const skip = (page - 1) * limit;
+
+  const where = {
+    ...(type && { type: type }),
+    ...(category && { category: category }),
+  };
+
+  const [customers, total] = await Promise.all([
+    prisma.cashFlow.findMany({
+      where,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: limit,
+      skip,
+      include: {
+        createdBy: true,
+        updatedBy: true,
+      },
+    }),
+    prisma.cashFlow.count({ where }),
+  ]);
+
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  return successResponse<PaginationType<CashFlowResponse>>(
+    res,
+    "Customers fetched successfully",
+    {
+      data: customers.map((cashFlow) => ({
+        id: cashFlow.id,
+        type: cashFlow.type,
+        category: cashFlow.category,
+        amount: cashFlow.amount,
+        note: cashFlow.note,
+        createdAt: cashFlow.createdAt,
+        updatedAt: cashFlow.updatedAt,
+        createdBy: {
+          id: cashFlow.createdBy.id,
+          name: cashFlow.createdBy.name,
+        },
+        updatedBy: cashFlow.updatedBy
+          ? {
+              id: cashFlow.updatedBy.id,
+              name: cashFlow.updatedBy.name,
+            }
+          : null,
+      })),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    },
+    200,
   );
 };
 
@@ -143,4 +219,4 @@ const updateCashFlowService = async (
   });
 };
 
-export { createCashFlowService, updateCashFlowService };
+export { createCashFlowService, getCashFlowService, updateCashFlowService };

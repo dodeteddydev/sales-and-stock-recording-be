@@ -1,5 +1,6 @@
 import { Category, Type } from "../../generated/prisma/enums";
 import { IdAndNameType } from "../types/idAndNameType";
+import { ParametersType } from "../types/parametersType";
 
 export type CashFlowRequest = {
   type: Type;
@@ -18,4 +19,9 @@ export type CashFlowResponse = {
   createdBy: IdAndNameType;
   updatedAt: Date;
   updatedBy: IdAndNameType | null;
+};
+
+export type CashFlowParameters = ParametersType & {
+  type?: Type;
+  category?: Category;
 };

@@ -104,13 +104,8 @@ const getRestockService = async (
 
   const skip = (page - 1) * limit;
 
-  const where = {
-    createdById: userId,
-  };
-
   const [restocks, total] = await Promise.all([
     prisma.restock.findMany({
-      where,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit,
       skip,
@@ -120,7 +115,7 @@ const getRestockService = async (
         product: true,
       },
     }),
-    prisma.restock.count({ where }),
+    prisma.restock.count(),
   ]);
 
   const totalPages = total === 0 ? 0 : Math.ceil(total / limit);

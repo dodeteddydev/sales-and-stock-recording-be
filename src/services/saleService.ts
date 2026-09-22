@@ -39,6 +39,15 @@ const createSaleService = async (
     return errorResponse(res, "Product not found", null, 404);
   }
 
+  if (productExist.stock < createSaleRequest.qty) {
+    return errorResponse(
+      res,
+      `Insufficient stock. Only ${productExist.stock} item(s) available.`,
+      null,
+      400,
+    );
+  }
+
   const sale = await prisma.sale.create({
     data: {
       customerId: createSaleRequest.customerId,
@@ -61,6 +70,15 @@ const createSaleService = async (
       customer: true,
       product: true,
       createdBy: true,
+    },
+  });
+
+  await prisma.product.update({
+    where: { id: createSaleRequest.productId },
+    data: {
+      stock: {
+        decrement: createSaleRequest.qty,
+      },
     },
   });
 
@@ -107,7 +125,6 @@ const getSaleService = async (
   const skip = (page - 1) * limit;
 
   const where = {
-    createdById: userId,
     ...(customerId && { customerId: customerId }),
     ...(productId && { productId: productId }),
   };
@@ -199,6 +216,25 @@ const updateSaleService = async (
 
   if (!productExist) {
     return errorResponse(res, "Product not found", null, 404);
+  }
+
+  if (saleExist.qty === updateSaleRequest.qty) {
+  } else if (saleExist.qty > updateSaleRequest.qty) {
+    await prisma.product.update({
+      where: { id: saleExist.productId },
+      data: {
+        stock: {
+          increment: saleExist.qty - updateSaleRequest.qty,
+        },
+      },
+    });
+  } else if (productExist.stock < updateSaleRequest.qty) {
+    return errorResponse(
+      res,
+      `Insufficient stock. Only ${productExist.stock} item(s) available.`,
+      null,
+      400,
+    );
   }
 
   const sale = await prisma.sale.update({
