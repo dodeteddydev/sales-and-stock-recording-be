@@ -25,6 +25,9 @@ model User {
   salesCreated Sale[] @relation("SaleCreatedBy")
   salesUpdated Sale[] @relation("SaleUpdatedBy")
 
+  saleOrdersCreated SaleOrder[] @relation("SaleOrderCreatedBy")
+  saleOrdersUpdated SaleOrder[] @relation("SaleOrderUpdatedBy")
+
   cashflowsCreated CashFlow[] @relation("CashFlowCreatedBy")
   cashflowsUpdated CashFlow[] @relation("CashFlowUpdatedBy")
 }
@@ -78,6 +81,7 @@ model Customer {
   createdBy   User     @relation("CustomerCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
   updatedBy   User?    @relation("CustomerUpdatedBy", fields: [updatedById], references: [id])
   sales       Sale[]
+  saleOrders  SaleOrder[]
 
   @@index([createdById])
   @@index([updatedById])
@@ -94,15 +98,36 @@ model Sale {
   updatedById Int?
   productId   Int
   customerId  Int
-  cashflow    CashFlow?
+  saleOrderId Int
   customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  saleOrder   SaleOrder @relation(fields: [saleOrderId], references: [id], onDelete: Cascade)
   createdBy   User      @relation("SaleCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
   updatedBy   User?     @relation("SaleUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([createdById])
   @@index([updatedById])
   @@index([productId])
+  @@index([customerId])
+  @@index([saleOrderId])
+}
+
+model SaleOrder {
+  id          Int       @id @default(autoincrement())
+  total       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+  updatedById Int?
+  customerId  Int
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items       Sale[]
+  cashflow    CashFlow?
+  createdBy   User      @relation("SaleOrderCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedBy   User?     @relation("SaleOrderUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
   @@index([customerId])
 }
 
@@ -117,9 +142,9 @@ model CashFlow {
   createdById Int
   updatedById Int?
   restockId   Int?     @unique
-  saleId      Int?     @unique
+  saleOrderId Int?     @unique
   restock     Restock? @relation(fields: [restockId], references: [id])
-  sale        Sale?    @relation(fields: [saleId], references: [id])
+  saleOrder   SaleOrder? @relation(fields: [saleOrderId], references: [id])
   createdBy   User     @relation("CashFlowCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
   updatedBy   User?    @relation("CashFlowUpdatedBy", fields: [updatedById], references: [id])
 
