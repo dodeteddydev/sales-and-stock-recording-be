@@ -1,19 +1,27 @@
 import { IdAndNameType } from "../types/idAndNameType";
 import { ParametersType } from "../types/parametersType";
+import { z } from "zod";
+import { createSaleSchema } from "../schemas/saleSchema";
 
-export type SaleRequest = {
-  customerId: number;
-  productId: number;
-  qty: number;
-};
+export type SaleRequest = z.infer<typeof createSaleSchema>;
 
-export type SaleResponse = {
+export type SaleLineResponse = {
   id: number;
   qty: number;
   price: number;
   total: number;
-  customer: IdAndNameType;
   product: IdAndNameType;
+  createdAt: Date;
+  createdBy: IdAndNameType;
+  updatedAt: Date;
+  updatedBy: IdAndNameType | null;
+};
+
+export type SaleResponse = {
+  id: number;
+  total: number;
+  customer: IdAndNameType;
+  items: SaleLineResponse[];
   createdAt: Date;
   createdBy: IdAndNameType;
   updatedAt: Date;
